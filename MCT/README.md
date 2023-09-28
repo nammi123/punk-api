@@ -15,5 +15,5 @@ All the above methods are used to access data in punk API.
 https://nammi123.github.io/punk-api/MCT/index.html
 
 # Screenshots
-![Screenshot (79)](https://github.com/nammi123/DOM-Assignments/assets/96935962/424423c4-b156-49c6-8543-b5ff78888526)
-![Screenshot (80)](https://github.com/nammi123/DOM-Assignments/assets/96935962/7111e0f1-eff2-43fc-8482-c776728a88ea)
+![Screenshot (83)](https://github.com/nammi123/punk-api/assets/96935962/e2349215-6f40-4933-ba91-989d868fdbfd)
+
