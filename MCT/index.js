@@ -1,112 +1,112 @@
-const endpoint = "https://api.punkapi.com/v2/beers?page=1&per_page=80";
-$.getJSON(endpoint, function(data) {
-  console.log(data);
-  let weakBeers = data.filter(beer => beer.abv <= 4.5);
-  let medBeers = data.filter(beer => beer.abv > 4.5 && beer.abv <= 7.5);
-  let strongBeers = data.filter(beer => beer.abv > 7.5 && beer.abv <= 50);
+document.addEventListener("DOMContentLoaded", () => {
+  // API URL
+  const apiUrl = "https://api.punkapi.com/v2/beers?page=1&per_page=60";
 
+  // Variables to manage pagination
+  const minProductsPerPage = 10; // Minimum products per page
+  let currentPage = 1;
+  let filteredProducts = [];
+
+  // Get DOM elements
+  const searchInput = document.getElementById("search-input");
+  const searchButton = document.getElementById("search-button");
+  const resetButton = document.getElementById("reset-button");
+  const productContainer = document.getElementById("product-container");
+  const pagination = document.getElementById("pagination");
   
-  function Display(range, percent) {
-   
-    let beerHtml = range.map(
-      item =>
-        `
-        <div class = 'beer-wrapper'>
-        <div class = "beer ${percent}">
-          <i class="fa fa-star" aria-hidden="true"></i>
-          <h3 class="beer__name">${item.name}</h3>
-          <img class ="beer__img" src = "${item.image_url}">
-          <h4 class ="beer__tagline">${item.tagline}</h4>
-         
-         </div>
-         <div class ="pop-up">
-          <i class="fa fa-window-close-o" aria-hidden="true"></i>
-            <h3 class ="title">Description</h3>
-            <p>${item.description}</p>
-            <h3 class ="title">Food Pairing</h3>
-              <ul>
-       
-               ${item.food_pairing
-                 .map(ingredient => `<li>${ingredient}</li>`)
-                 .join("")}
-
-              </ul>
-          </div>
-        </div>
-            `
-    );
-
-    $(".beers").append(beerHtml);
+  // Function to fetch product data from the API
+  async function fetchProducts() {
+      try {
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+          filteredProducts = data;
+          currentPage = 1;
+          displayProducts(currentPage);
+          updatePaginationButtons();
+      } catch (error) {
+          console.error(error);
+      }
   }
+
+  // Function to display products on a specific page
+  function displayProducts(page) {
+      const startIndex = (page - 1) * minProductsPerPage;
+      const endIndex = startIndex + minProductsPerPage;
+      const productsToDisplay = filteredProducts.slice(startIndex, endIndex);
+
+      // Clear previous products
+      productContainer.innerHTML =" ";
+
+      
+
+      // Display products in rows of 4 each
+      for (let i = 0; i < productsToDisplay.length; i += 4) {
+          const row = document.createElement("div");
+          row.className = "product-row";
+
+          const rowProducts = productsToDisplay.slice(i, i + 4);
+
+          rowProducts.forEach(product => {
+              const productCard = document.createElement("div");
+              productCard.className = "product-card";
+
+              // Display product image
+              const productImage = document.createElement("img");
+              productImage.src = product.image_url;
+              productCard.appendChild(productImage);
+
+              // Display product name
+              const productName = document.createElement("p");
+              productName.textContent = product.name;
+              productCard.appendChild(productName);
+
+              row.appendChild(productCard);
+          });
+
+          productContainer.appendChild(row);
+      }
+
+      if(productsToDisplay.length==0)
+      {
+          productContainer.innerHTML="This product is not available please search another one 😊😊";  
+      }
+  }
+
   
-  Display(weakBeers, "weak");
-  Display(medBeers, "medium");
-  Display(strongBeers, "strong");
 
+  // Function to update pagination buttons
+  function updatePaginationButtons() {
+      const totalPages = Math.ceil(filteredProducts.length / minProductsPerPage);
+      pagination.innerHTML = "";
 
- 
-  $(".favourites").append(
-    '<i class="fa fa-window-close-o favourites__close" aria-hidden="true"></i>'
-  );
+      for (let i = 1; i <= totalPages; i++) {
+          const pageItem = document.createElement("li");
+          pageItem.textContent = i;
+          pageItem.addEventListener("click", () => {
+              currentPage = i;
+              displayProducts(currentPage);
+          });
+          pagination.appendChild(pageItem);
+      }
+  }
 
-  $(".favourites").on("click", ".favourites__close", function() {
-    $(".favourites").fadeOut();
+  // Event listener for search button click
+  searchButton.addEventListener("click", () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      filteredProducts = filteredProducts.filter(product =>
+          product.name.toLowerCase().includes(searchTerm)
+      );
+      currentPage = 1;
+      displayProducts(currentPage);
+      updatePaginationButtons();
   });
 
-  $(".favourites__title").on("click", function() {
-    $(".favourites").fadeIn();
+  // Event listener for reset button click
+  resetButton.addEventListener("click", () => {
+      searchInput.value = "";
+      fetchProducts(); // Refetch the original data from the API
   });
 
-  
-  $(".beer img").on("click", function() {
-    $(this)
-      .closest(".beer-wrapper")
-      .find(".pop-up")
-      .fadeIn();
-    $(".bg").fadeIn();
-  });
-
-  $(".fa-window-close-o").on("click", function() {
-    $(".pop-up").fadeOut();
-    $(".bg").fadeOut();
-  });
-  
-
-  $(".beer").css("display", "none");
-
-  $(".beers .medium").css("display", "block");
-
-  $(".tab__item").on("click", function() {
-    $(".tab__item").removeClass("active");
-    $(this).addClass("active");
-  });
-
-  $(".tab__item.weak").on("click", function() {
-    $(".beers .weak").show();
-
-    $(".beers .medium").hide();
-    $(".beers .strong").hide();
-  });
-
-  $(".tab__item.medium").on("click", function() {
-    $(".beers .medium").show();
-
-    $(".beers .weak").hide();
-    $(".beers .strong").hide();
-  });
-
-  $(".tab__item.strong").on("click", function() {
-    $(".beers .strong").show();
-
-    $(".beers .weak").hide();
-    $(".beers .medium").hide();
-  });
+  // Initial display
+  fetchProducts();
 });
-const input=document.getElementById("search")
-const reset=document.getElementById("reset")
-
-reset.addEventListener("click", () => {
-    data.value = "";
-    Display(); 
-});
-
